@@ -1,0 +1,162 @@
+/*
+   Downloaded from: technik-fan.de/index.php/Open_Energy_Monitor_mit_dem_ESP32
+*/
+#include <Arduino.h>
+#include "EmonLib.h"
+#include <driver/adc.h>
+#define ADC_BITS 10;
+
+//////////////displej////////////////////////////////////////
+#include <U8g2lib.h>//knihovna na displej
+#include <SPI.h>
+#include <Wire.h>
+U8G2_SSD1306_128X64_NONAME_F_4W_SW_SPI u8g2(U8G2_R0, /* clock=*/ 26, /* data=*/ 14, /* cs=*/ 23, /* dc=*/ 13, /* reset=*/ 12);
+//////////////displej////////////////////////////////////////
+//Setup variables
+
+#define ADC_COUNTS  (1<<ADC_BITS)
+
+//Setup variables
+int numberOfSamples = 9000;
+
+
+
+
+EnergyMonitor emon1;//fáze1 přívod
+EnergyMonitor emon2;//fáze2 přívod
+EnergyMonitor emon3;//fáze3 přívod
+EnergyMonitor emon4;//fáze1 TČ
+EnergyMonitor emon5;//fáze2 TČ
+EnergyMonitor emon6;//fáze3 TČ
+
+// VREF: Analog reference
+// For Arduino UNO, Leonardo and mega2560, etc. change VREF to 5
+// For Arduino Zero, Due, MKR Family, ESP32, etc. 3V3 controllers, change VREF to 3.3
+//#define VREF 3.3// 5.5
+int SupplyVoltage = 3300;
+
+//First Run Counter
+int firstrun = 0;
+int napeti = 229.0;
+
+
+
+//unsigned long timer;
+
+
+
+
+
+
+void setup() {
+  u8g2.begin();//displej
+  pinMode(2, OUTPUT);
+  //Set Analog Inputs
+
+  emon1.current(34, 6.85);//fáze1 přívod   6.85 je kalibrační konstanta //7.2
+  emon2.current(35, 6.85);//fáze2 přívod
+  emon3.current(32, 6.85);//fáze3 přívod
+  emon4.current(33, 6.85);//fáze1 TČ
+  emon5.current(25, 6.85);//fáze2 TČ
+  emon6.current(27, 6.85);//fáze3 TČ
+
+  
+
+
+  Serial.begin(115200);//115200
+  delay(1000);
+ 
+
+}
+
+void loop() {
+ // timer = millis();
+  unsigned long previousMillis = millis();
+ // int count = 0;
+ // int count2 = 0;
+  //int count3 = 0;
+
+
+
+  
+
+
+
+    double Irms1 = emon1.calcIrms(1480);  // Calculate Irms only 1480 /1172
+   
+delay(100);
+  
+    double Irms2 = emon2.calcIrms(1480);  // Calculate Irms only 1480
+
+    delay(100);
+    double Irms3 = emon3.calcIrms(1480);  // Calculate Irms only 1480
+delay(100);
+   
+
+    //**************************************************************************
+    //Phase4
+    delay(100);
+    double Irms4 = emon4.calcIrms(1480);  // Calculate Irms only 
+    //**************************************************************************
+    //Phase5
+    delay(100);
+    double Irms5 = emon5.calcIrms(1480);  // Calculate Irms only 
+    //**************************************************************************
+    //Phase6
+    double Irms6 = emon6.calcIrms(1480);  // Calculate Irms only 
+    delay(100);
+
+/*
+
+    Serial.println("Irms1:" + String(Irms1) + "mA");
+    Serial.println("Irms2:" + String(Irms2) + "mA");
+    Serial.println("Irms3:" + String(Irms3) + "mA");
+    Serial.println("Irms4:" + String(Irms4) + "mA");
+    Serial.println("Irms5:" + String(Irms5) + "mA");
+    Serial.println("Irms6:" + String(Irms6) + "mA");
+*/
+
+
+
+    //nastavení displeje
+    u8g2.clearBuffer();                  // vyčistit vnitřní paměť displeje
+    u8g2.setFont(u8g2_font_ncenB08_tr); // vyber font
+    //u8g2.setDrawColor(0x001F);//barva fontu
+    u8g2.setCursor(0, 10);
+    u8g2.print ("Tc1= ");
+    u8g2.print (Irms4);
+    u8g2.print ("A");
+    u8g2.setCursor(0, 25);
+    u8g2.print ("Tc2= ");
+    u8g2.print (Irms5);
+    u8g2.print ("A");
+    u8g2.setCursor(0, 40);
+    u8g2.print ("Tc3= ");
+    u8g2.print (Irms6);
+    u8g2.print ("A");
+    u8g2.setCursor(65, 10);
+    u8g2.print ("I1= ");
+    u8g2.print (Irms1);
+    u8g2.print ("A");
+    u8g2.setCursor(65, 25);
+    u8g2.print ("I2= ");
+    u8g2.print (Irms2);
+    u8g2.print ("A");
+    u8g2.setCursor(65, 40);
+    u8g2.print ("I3= ");
+    u8g2.print (Irms3);
+    u8g2.print ("A");
+
+    
+
+    
+    //u8g2.drawStr(0,20,"P1=" + watt1);       // napiš něco do vnitřní paměti    
+    //u8g2.drawStr(0,40," watt2.c_str());       // napiš něco do vnitřní paměti
+    //u8g2.drawStr(0,60,"bila");       // napiš něco do vnitřní paměti
+    u8g2.drawFrame(0, 0, 128, 64);//rámeček
+    u8g2.sendBuffer();                   // pošli vnitřní paměť do displeje
+  //  delay(1000);
+
+
+   
+}
