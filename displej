@@ -33,7 +33,7 @@ EnergyMonitor emon6;//fáze3 TČ
 // For Arduino UNO, Leonardo and mega2560, etc. change VREF to 5
 // For Arduino Zero, Due, MKR Family, ESP32, etc. 3V3 controllers, change VREF to 3.3
 //#define VREF 3.3// 5.5
-int SupplyVoltage = 3300;
+//int SupplyVoltage = 3300;
 
 //First Run Counter
 int firstrun = 0;
